@@ -1,0 +1,16 @@
+{
+  "name": "best-buy-stock-check",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "private": true,
+  "devDependencies": {
+    "@vercel/node": "^5.1.15",
+    "typescript": "^5.8.3"
+  }
+}
