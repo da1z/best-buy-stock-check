@@ -43,7 +43,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       );
     }
   }
-  return res.send(200);
+  return res.status(200).json({ message: 'Message processed successfully' });
 }
 
 export default verifySignature(handler);
