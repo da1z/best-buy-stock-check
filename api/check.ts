@@ -9,6 +9,7 @@ type BestBuyProduct = {
   sku: number;
   name: string;
   addToCartUrl: string;
+  url: string;
   orderable: 'Available' | 'ComingSoon';
   onlineAvailability: boolean;
   inStoreAvailability: boolean;
@@ -27,7 +28,25 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   sku = Array.isArray(sku) ? sku : [sku];
   const products = await Promise.all(sku.map(fetchProduct));
 
-  for (const product of products) {
+  for (const product of products.map(
+    ({
+      sku,
+      name,
+      addToCartUrl,
+      url,
+      orderable,
+      onlineAvailability,
+      inStoreAvailability,
+    }) => ({
+      sku,
+      name,
+      addToCartUrl,
+      url,
+      orderable,
+      onlineAvailability,
+      inStoreAvailability,
+    })
+  )) {
     if (
       product.orderable === 'Available' ||
       product.inStoreAvailability ||
@@ -42,6 +61,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
           <p>Add to cart: <a href="${product.addToCartUrl}">${
             product.addToCartUrl
           }</a></p>
+          <p>Product page: <a href="${product.url}">${product.url}</a></p>
           <p>Raw data: ${JSON.stringify(product)}</p>`,
         })
       );
