@@ -28,7 +28,11 @@ async function handler(req: VercelRequest, res: VercelResponse) {
   const products = await Promise.all(sku.map(fetchProduct));
 
   for (const product of products) {
-    if (product.orderable === 'Available') {
+    if (
+      product.orderable === 'Available' ||
+      product.inStoreAvailability ||
+      product.onlineAvailability
+    ) {
       waitUntil(
         resend.emails.send({
           from: `Best Buy Stock Check <${process.env.EMAIL_FROM}>`,
