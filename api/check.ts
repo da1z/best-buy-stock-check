@@ -16,16 +16,26 @@ type BestBuyProduct = {
 };
 
 const fetchProduct = async (sku: string) => {
-  const response = await fetch(
-    `https://api.bestbuy.com/v1/products/${sku}.json?apiKey=${process.env.BESTBUY_API_KEY}`
-  );
-  const data: BestBuyProduct = await response.json();
-  return data;
+  console.log(`Fetching product SKU: ${sku}`);
+  try {
+    const response = await fetch(
+      `https://api.bestbuy.com/v1/products/${sku}.json?apiKey=${process.env.BESTBUY_API_KEY}`
+    );
+    const data: BestBuyProduct = await response.json();
+    console.log(`Successfully fetched product: ${data.name}`);
+    return data;
+  } catch (error) {
+    console.error(`Error fetching product ${sku}:`, error);
+    throw error;
+  }
 };
 
 async function handler(req: VercelRequest, res: VercelResponse) {
+  console.log('Starting stock check');
   let sku: string | string[] = req.body.sku;
   sku = Array.isArray(sku) ? sku : [sku];
+  console.log(`Checking SKUs: ${sku.join(', ')}`);
+
   const products = await Promise.all(sku.map(fetchProduct));
 
   for (const product of products.map(
@@ -47,11 +57,18 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       inStoreAvailability,
     })
   )) {
+    console.log(`Checking availability for ${product.name}:`, {
+      orderable: product.orderable,
+      onlineAvailability: product.onlineAvailability,
+      inStoreAvailability: product.inStoreAvailability,
+    });
+
     if (
       product.orderable === 'Available' ||
       product.inStoreAvailability ||
       product.onlineAvailability
     ) {
+      console.log('Product is available');
       waitUntil(
         resend.emails.send({
           from: `Best Buy Stock Check <${process.env.EMAIL_FROM}>`,
@@ -67,6 +84,7 @@ async function handler(req: VercelRequest, res: VercelResponse) {
       );
     }
   }
+  console.log('Stock check completed');
   return res.status(200).json({ message: 'Message processed successfully' });
 }
 
